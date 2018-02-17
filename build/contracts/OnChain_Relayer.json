@@ -1,0 +1,120 @@
+{
+  "contractName": "OnChain_Relayer",
+  "abi": [],
+  "bytecode": "0x60606040523415600e57600080fd5b603580601b6000396000f3006060604052600080fd00a165627a7a723058206902892fd5ea443fd6e5f5dbba18d3cde15f6a12a44a8a902700a68bfba34ea50029",
+  "deployedBytecode": "0x6060604052600080fd00a165627a7a723058206902892fd5ea443fd6e5f5dbba18d3cde15f6a12a44a8a902700a68bfba34ea50029",
+  "sourceMap": "118:2489:3:-;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "118:2489:3:-;;;;;",
+  "source": "pragma solidity ^0.4.17;\r\n\r\nimport \"./WETH9.sol\";\r\nimport \"./Interface0x.sol\";\r\nimport \"./TokenTransferProxy.sol\";\r\n\r\ncontract OnChain_Relayer{\r\n/*\r\n    struct data{\r\n        address owner;\r\n        uint amount;\r\n        uint locked;\r\n    }\r\n\r\n    struct order{\r\n        bytes32 orderHash;\r\n        address _maker;\r\n        uint amount_sell;\r\n        uint amount_buy;\r\n    }\r\n\r\n    address zeroX_address;\r\n    address token_address;\r\n    Interface0x zeroX;\r\n\r\n    modifier onlyOwner() {require(msg.sender == owner);_;}\r\n\r\n    Interface0x zeroX;\r\n    ERC20Interface Token;\r\n\r\n    function OnChain_Relayer(){\r\n        owner = msg.sender;\r\n    }\r\n\r\n\r\n    function placeLimit(bool _buy, uint _amount, uint _price) public returns(bytes32 _orderHash){\r\n\r\n    }\r\n\r\n    function cancelLimit(bytes32 _orderHash){\r\n\r\n    }\r\n\r\n    function takeOrder(bytes32 _orderHash){\r\n        zeroX.fillOrder(address[5] orderAddresses, uint[6] orderValues,uint fillTakerTokenAmount,bool shouldThrowOnInsufficientBalanceOrAllowance, uint8 v,bytes32 r, bytes32 s);\r\n\r\n            maker: orderAddresses[0],\r\n            taker: orderAddresses[1],\r\n            makerToken: orderAddresses[2],\r\n            takerToken: orderAddresses[3],\r\n            feeRecipient: orderAddresses[4],\r\n            makerTokenAmount: orderValues[0],\r\n            takerTokenAmount: orderValues[1],\r\n            makerFee: orderValues[2],\r\n            takerFee: orderValues[3],\r\n            expirationTimestampInSec: orderValues[4],\r\n    }\r\n\r\n    function depositToken(uint _amount) {\r\n      //remember to do: approve(address(this), _amount)\r\n      require(msg.value == 0 && token_add != address(0) && _amount !=0);\r\n      require(Token(token).transferFrom(msg.sender, this, amount));\r\n      tokens[token][msg.sender] = safeAdd(tokens[token][msg.sender], amount);\r\n      Deposit(token, msg.sender, amount, tokens[token][msg.sender]);\r\n    }\r\n\r\n    function withdrawToken(uint _amount) {\r\n      require(msg.value == 0 && token_add != address(0) && _amount !=0);\r\n      require(tokens[token][msg.sender] >= _amount);\r\n      tokens[token][msg.sender] = safeSub(tokens[token][msg.sender], amount);\r\n      if (!Token(token).transfer(msg.sender, amount)) throw;\r\n      Withdraw(token, msg.sender, amount, tokens[token][msg.sender]);\r\n    }\r\n\r\n    function setToken(address _tokenAddress) public onlyOwner() {\r\n        token_address = _tokenAddress;\r\n    }\r\n\r\n    function set0x_address(address _0x) public onlyOwner(){\r\n        zeroX = Interface0x(_0x);\r\n    }\r\n\r\n    function setOwner(address _newOwner) public onlyOwner(){\r\n        owner = _newOwner;\r\n    }\r\n*/\r\n}",
+  "sourcePath": "C:\\company\\0x\\roc\\contracts\\OnChain_Relayer.sol",
+  "ast": {
+    "attributes": {
+      "absolutePath": "/C/company/0x/roc/contracts/OnChain_Relayer.sol",
+      "exportedSymbols": {
+        "OnChain_Relayer": [
+          1637
+        ]
+      }
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            "^",
+            "0.4",
+            ".17"
+          ]
+        },
+        "id": 1633,
+        "name": "PragmaDirective",
+        "src": "0:24:3"
+      },
+      {
+        "attributes": {
+          "SourceUnit": 2349,
+          "absolutePath": "/C/company/0x/roc/contracts/WETH9.sol",
+          "file": "./WETH9.sol",
+          "scope": 1638,
+          "symbolAliases": [
+            null
+          ],
+          "unitAlias": ""
+        },
+        "id": 1634,
+        "name": "ImportDirective",
+        "src": "28:21:3"
+      },
+      {
+        "attributes": {
+          "SourceUnit": 1575,
+          "absolutePath": "/C/company/0x/roc/contracts/Interface0x.sol",
+          "file": "./Interface0x.sol",
+          "scope": 1638,
+          "symbolAliases": [
+            null
+          ],
+          "unitAlias": ""
+        },
+        "id": 1635,
+        "name": "ImportDirective",
+        "src": "51:27:3"
+      },
+      {
+        "attributes": {
+          "SourceUnit": 2105,
+          "absolutePath": "/C/company/0x/roc/contracts/TokenTransferProxy.sol",
+          "file": "./TokenTransferProxy.sol",
+          "scope": 1638,
+          "symbolAliases": [
+            null
+          ],
+          "unitAlias": ""
+        },
+        "id": 1636,
+        "name": "ImportDirective",
+        "src": "80:34:3"
+      },
+      {
+        "attributes": {
+          "baseContracts": [
+            null
+          ],
+          "contractDependencies": [
+            null
+          ],
+          "contractKind": "contract",
+          "documentation": null,
+          "fullyImplemented": true,
+          "linearizedBaseContracts": [
+            1637
+          ],
+          "name": "OnChain_Relayer",
+          "nodes": [
+            null
+          ],
+          "scope": 1638
+        },
+        "id": 1637,
+        "name": "ContractDefinition",
+        "src": "118:2489:3"
+      }
+    ],
+    "id": 1638,
+    "name": "SourceUnit",
+    "src": "0:2607:3"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.18+commit.9cf6e910.Emscripten.clang"
+  },
+  "networks": {
+    "4447": {
+      "events": {},
+      "links": {},
+      "address": "0x8f0483125fcb9aaaefa9209d8e9d7b9c8b9fb90f"
+    }
+  },
+  "schemaVersion": "1.0.1",
+  "updatedAt": "2018-02-17T16:44:51.556Z"
+}
