@@ -2,7 +2,7 @@ pragma solidity ^0.4.17;
 
 interface Interface0x{
 
-    function Exchange(address _zrxToken, address _tokenTransferProxy) ;
+    function Exchange(address _zrxToken, address _tokenTransferProxy) public;
     
     function fillOrder(address[5] orderAddresses, uint[6] orderValues,uint fillTakerTokenAmount,bool shouldThrowOnInsufficientBalanceOrAllowance, uint8 v,bytes32 r, bytes32 s) public returns (uint filledTakerTokenAmount);
     

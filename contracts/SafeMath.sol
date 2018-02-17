@@ -17,6 +17,15 @@ contract SafeMath {
         return a - b;
     }
 
+    function abs(int a) internal constant returns(uint256){
+        if(a < 0) {
+            uint(-a);
+        }
+        else {
+            uint(a);
+        }
+    }
+
     function safeAdd(uint a, uint b) internal constant returns (uint256) {
         uint c = a + b;
         assert(c >= a);
