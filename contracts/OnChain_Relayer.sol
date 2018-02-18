@@ -33,7 +33,9 @@ contract OnChain_Relayer is SafeMath{
 
     event NewOrder(bytes32 _hash,int _amount,uint _price);
     event FilledOrder(bytes32 _hash, uint _amount, uint _price);
-    event CancelledOrder(bytes32 _hash,int _amount,uint _price);    
+    event CancelledOrder(bytes32 _hash,int _amount,uint _price); 
+    event Print(string _blah, uint _val);
+    event Print2(string _b,int _val);   
 
     function OnChain_Relayer() public {
         owner = msg.sender;
@@ -44,10 +46,10 @@ contract OnChain_Relayer is SafeMath{
     function placeLimit(int _amount, uint _price,bytes32 hash,uint _salt,uint8 _v,bytes32 _r,bytes32 _s) public{
         require(_amount !=0);
         if(_amount > 0){
-            assert(Wrapped_Ether.allowance(msg.sender,zeroX_address) == msg.value);
+            assert(Wrapped_Ether.allowance(msg.sender,zeroX_address) == safeMul(uint(_amount),_price));
         }
         else{
-            assert(ERC20Token.allowance(msg.sender,zeroX_address) == msg.value);
+            assert(ERC20Token.allowance(msg.sender,zeroX_address) == uint(-_amount));
         }
         order_details[hash].amount = _amount;
         order_details[hash].price = _price;
@@ -68,16 +70,19 @@ contract OnChain_Relayer is SafeMath{
         uint8 _v;bytes32[2] memory sig;uint salt;
         (_v,sig[0],sig[1],salt) = getSignature(_orderHash);
         address[5] memory orderAddresses;
+        uint value;
         uint[6] memory orderValues;
         if(_amount > 0){
+            value = uint(_amount);
             orderAddresses = [_maker,msg.sender,wrapped_ether_address,token_address,owner];
-            orderValues = [safeMul(abs(_amount),_price),abs(_amount),0,0,2**256 - 1,salt];
+            orderValues = [safeMul(uint(_amount),_price),uint(_amount),0,0,2**256 - 1,salt];
         }
         else {
+            value = uint(-_amount);
             orderAddresses = [_maker,msg.sender,token_address,wrapped_ether_address,owner];
-            orderValues = [abs(_amount),safeMul(abs(_amount),_price),0,0,2**256 - 1,salt];
+            orderValues = [value,safeMul(uint(-_amount),_price),0,0,2**256 - 1,salt];
         }
-        assert(zeroX.cancelOrder(orderAddresses,orderValues,abs(_amount)) >0);
+        assert(zeroX.cancelOrder(orderAddresses,orderValues,value) >0);
         CancelledOrder(_orderHash,_amount,_price);
         return true;
 
@@ -87,25 +92,28 @@ contract OnChain_Relayer is SafeMath{
         //must call allowance beforehand
         int _amount; uint _price; address _maker;
         (_amount,_price,_maker) = getInfo(_orderHash);
-        require(abs(_amount) >= _TokenAmount);
         uint8 _v;bytes32[2] memory sig;uint salt;
         (_v,sig[0],sig[1],salt) = getSignature(_orderHash);
         address[5] memory orderAddresses;
         uint[6] memory orderValues;
+        uint value;
         if(_amount > 0){
-            require(msg.value == 0);
+            //assert(value >= _TokenAmount);
+            value = uint(_amount);
             orderAddresses = [_maker,msg.sender,wrapped_ether_address,token_address,owner];
             orderValues = [safeMul(_TokenAmount,_price),_TokenAmount,0,0,2**256 - 1,salt];
-            assert(ERC20Token.allowance(msg.sender,zeroX_address) == msg.value);
+            //assert(ERC20Token.allowance(msg.sender,zeroX_address) == value);
         }
         else {
-            assert(Wrapped_Ether.allowance(msg.sender,zeroX_address) == msg.value);
+            value = uint(-_amount);
+            //assert(value >= _TokenAmount);
+            //assert(Wrapped_Ether.allowance(msg.sender,zeroX_address) == value);
             orderAddresses = [_maker,msg.sender,token_address,wrapped_ether_address,owner];
             orderValues = [_TokenAmount,safeMul(_TokenAmount,_price),0,0,2**256 - 1,salt];
         }
-        uint _taken = zeroX.fillOrder(orderAddresses,orderValues,_TokenAmount,false,_v,sig[0],sig[1]);
+        uint _taken = 0; // zeroX.fillOrder(orderAddresses,orderValues,_TokenAmount,false,_v,sig[0],sig[1]);
      if(_taken > 0){
-        if(_taken == abs(_amount)){
+        if(_taken == value){
             removeOrder(_orderHash);
         }
         else{
