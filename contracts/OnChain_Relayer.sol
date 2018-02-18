@@ -24,11 +24,9 @@ contract OnChain_Relayer is SafeMath{
     address public zeroX_address;
     address public token_address;
     address public wrapped_ether_address;
-    address public token_transfer_proxy_address;
     Interface0x zeroX;
     Token ERC20Token;
     WETH9 Wrapped_Ether;
-    TokenTransferProxy TTP;
 
     modifier onlyOwner() {require(msg.sender == owner);_;}
 
@@ -156,11 +154,6 @@ contract OnChain_Relayer is SafeMath{
     function set0x_address(address _0x) public onlyOwner(){
         zeroX_address = _0x;
         zeroX = Interface0x(_0x);
-    }
-
-    function setTokenTransferProxy(address _ttp) public onlyOwner(){
-        token_transfer_proxy_address = _ttp;
-        TTP = TokenTransferProxy(_ttp);
     }
 
     function setOwner(address _newOwner) public onlyOwner(){
