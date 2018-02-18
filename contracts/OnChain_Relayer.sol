@@ -47,13 +47,13 @@ contract OnChain_Relayer is SafeMath{
 
         if(_amount > 0){
             require(safeMul(abs(_amount),_price) == msg.value);
-            Wrapped_Ether.delegatecall(bytes4(sha3("deposit(uint)")), msg.value);
-            Wrapped_Ether.delegatecall(bytes4(sha3("approve(address,uint)")),zeroX_address, msg.value);
+            Wrapped_Ether.delegatecall(bytes4(sha3("deposit(uint256)")), msg.value);
+            Wrapped_Ether.delegatecall(bytes4(sha3("approve(address,uint256)")),zeroX_address, msg.value);
             require(Wrapped_Ether.allowance(msg.sender,zeroX_address) == msg.value);
         }
         else{
             require(msg.value == 0);
-            ERC20Token.delegatecall(bytes4(sha3("approve(address,uint)")),zeroX_address,msg.value);
+            ERC20Token.delegatecall(bytes4(sha3("approve(address,uint256)")),zeroX_address,msg.value);
             require(ERC20Token.allowance(msg.sender,zeroX_address) == msg.value);
         }
         uint nonce = safeMul(_v,block.timestamp) % now;
@@ -105,13 +105,13 @@ contract OnChain_Relayer is SafeMath{
             require(msg.value == 0);
             orderAddresses = [_maker,msg.sender,wrapped_ether_address,token_address,owner];
             orderValues = [safeMul(_TokenAmount,_price),_TokenAmount,0,0,2**256 - 1,salt];
-            ERC20Token.delegatecall(bytes4(sha3("approve(address,uint)")),zeroX_address,msg.value);
+            ERC20Token.delegatecall(bytes4(sha3("approve(address,uint256)")),zeroX_address,msg.value);
             require(ERC20Token.allowance(msg.sender,zeroX_address) == msg.value);
         }
         else {
             require(safeMul(_TokenAmount,_price) == msg.value);
-            Wrapped_Ether.delegatecall(bytes4(sha3("deposit(uint)")), msg.value);
-            Wrapped_Ether.delegatecall(bytes4(sha3("approve(address,uint)")),zeroX_address, msg.value);
+            Wrapped_Ether.delegatecall(bytes4(sha3("deposit(uint256)")), msg.value);
+            Wrapped_Ether.delegatecall(bytes4(sha3("approve(address,uint256)")),zeroX_address, msg.value);
             require(Wrapped_Ether.allowance(msg.sender,zeroX_address) == msg.value);
             orderAddresses = [_maker,msg.sender,token_address,wrapped_ether_address,owner];
             orderValues = [_TokenAmount,safeMul(_TokenAmount,_price),0,0,2**256 - 1,salt];
