@@ -59,6 +59,7 @@ contract OnChain_Relayer is SafeMath{
         order_details[hash].s= _s;
         order_details[hash].salt = _salt;
         orders.push(hash);
+        order_index[hash] = orders.length;
         NewOrder(hash,_amount,_price);
     }
 
@@ -98,20 +99,24 @@ contract OnChain_Relayer is SafeMath{
         uint[6] memory orderValues;
         uint value;
         if(_amount > 0){
-            //assert(value >= _TokenAmount);
             value = uint(_amount);
-            orderAddresses = [_maker,msg.sender,wrapped_ether_address,token_address,owner];
+            assert(value >= _TokenAmount);
+            orderAddresses = [_maker,address(this),wrapped_ether_address,token_address,owner];
             orderValues = [safeMul(_TokenAmount,_price),_TokenAmount,0,0,2**256 - 1,salt];
-            //assert(ERC20Token.allowance(msg.sender,zeroX_address) == value);
+            assert(ERC20Token.allowance(msg.sender,zeroX_address) == value);
         }
         else {
             value = uint(-_amount);
-            //assert(value >= _TokenAmount);
-            //assert(Wrapped_Ether.allowance(msg.sender,zeroX_address) == value);
-            orderAddresses = [_maker,msg.sender,token_address,wrapped_ether_address,owner];
+            assert(value >= _TokenAmount);
+            assert(Wrapped_Ether.allowance(msg.sender,zeroX_address) == value);
+            orderAddresses = [_maker,address(this),token_address,wrapped_ether_address,owner];
             orderValues = [_TokenAmount,safeMul(_TokenAmount,_price),0,0,2**256 - 1,salt];
         }
-        uint _taken = 0; // zeroX.fillOrder(orderAddresses,orderValues,_TokenAmount,false,_v,sig[0],sig[1]);
+     uint _taken = zeroX.fillOrder(orderAddresses,orderValues,_TokenAmount,false,_v,sig[0],sig[1]);
+     if(_amount > 0){
+
+     }
+
      if(_taken > 0){
         if(_taken == value){
             removeOrder(_orderHash);
@@ -123,13 +128,21 @@ contract OnChain_Relayer is SafeMath{
         return true;
      }
      else{
-        cancelLimit(_orderHash);
+        removeOrder(_orderHash);
         return false ;
      }
     }
 
     function getInfo(bytes32 _hash)constant public returns(int _amount, uint _price, address _maker){
         return(order_details[_hash].amount,order_details[_hash].price,order_details[_hash].maker);
+    }
+
+    function getHashfromIndex(uint _index)constant public returns(bytes32){
+        returns(orders[_index]);
+    }
+
+    function getOrderLength()constant public returns(uint _len){
+        returns orders.length;
     }
 
     function getSignature(bytes32 _hash) constant internal returns(uint8 _v,bytes32 _r, bytes32 _s,uint salt){
@@ -157,7 +170,7 @@ contract OnChain_Relayer is SafeMath{
 
 
     function removeOrder(bytes32 _remove) internal {
-    uint last_index = orders.length;
+    uint last_index = orders.length - 1;
     bytes32 last_hash = orders[last_index];
     //If the hash we want to remove is the final hash in array
     if (last_hash != _remove) {
