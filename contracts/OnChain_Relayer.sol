@@ -47,10 +47,10 @@ contract OnChain_Relayer is SafeMath{
     function placeLimit(int _amount, uint _price,bytes32 hash,uint _salt,uint8 _v,bytes32 _r,bytes32 _s) public{
         require(_amount !=0);
         if(_amount > 0){
-            assert(Wrapped_Ether.allowance(msg.sender,tokentransferproxy_address) == safeMul(uint(_amount),_price));
+            assert(Wrapped_Ether.allowance(msg.sender,address(this)) == safeMul(uint(_amount),_price));
         }
         else{
-            assert(ERC20Token.allowance(msg.sender,tokentransferproxy_address) == uint(-_amount));
+            assert(ERC20Token.allowance(msg.sender,address(this)) == uint(-_amount));
         }
         order_details[hash].amount = _amount;
         order_details[hash].price = _price;
@@ -104,14 +104,18 @@ contract OnChain_Relayer is SafeMath{
             assert(value >= _TokenAmount);
             orderAddresses = [_maker,address(this),wrapped_ether_address,token_address,owner];
             orderValues = [safeMul(_TokenAmount,_price),_TokenAmount,0,0,2**256 - 1,salt];
-            assert(ERC20Token.allowance(msg.sender,tokentransferproxy_address) >= _TokenAmount);
+            assert(ERC20Token.allowance(msg.sender,address(this)) >= _TokenAmount);
+            ERC20Token.transferFrom(msg.sender,address(this),_TokenAmount);
+            ERC20Token.approve(tokentransferproxy_address,_TokenAmount);
         }
         else {
             value = safeMul(uint(-_amount),_price);
             assert(value >= _TokenAmount);
-            assert(Wrapped_Ether.allowance(msg.sender,tokentransferproxy_address) >= _TokenAmount);
+            assert(Wrapped_Ether.allowance(msg.sender,address(this)) >= _TokenAmount);
             orderAddresses = [_maker,address(this),token_address,wrapped_ether_address,owner];
             orderValues = [_TokenAmount,safeMul(_TokenAmount,_price),0,0,2**256 - 1,salt];
+            Wrapped_Ether.transferFrom(msg.sender,address(this),_TokenAmount);
+            Wrapped_Ether.approve(tokentransferproxy_address,_TokenAmount);
         }
      uint _taken = zeroX.fillOrder(orderAddresses,orderValues,_TokenAmount,false,_v,sig[0],sig[1]);
 

@@ -148,7 +148,7 @@ contract Exchange is SafeMath {
         uint paidMakerFee;
         uint paidTakerFee;
         filled[order.orderHash] = safeAdd(filled[order.orderHash], filledTakerTokenAmount);
-        require(transferViaTokenTransferProxy(
+        /*require(transferViaTokenTransferProxy(
             order.makerToken,
             order.maker,
             msg.sender,
@@ -159,7 +159,7 @@ contract Exchange is SafeMath {
             msg.sender,
             order.maker,
             filledTakerTokenAmount
-        ));
+        ));*/
         if (order.feeRecipient != address(0)) {
             if (order.makerFee > 0) {
                 paidMakerFee = getPartialAmount(filledTakerTokenAmount, order.takerTokenAmount, order.makerFee);
