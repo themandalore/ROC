@@ -22,10 +22,12 @@ contract('Contracts', function(accounts) {
   	console.log(dummyToken.address);
   	onchain_relayer = await OnChain_Relayer.deployed();
   	wrapped_ether = await WETH9.deployed();
+  	tokenTransferProxy = await TokenTransferProxy.deployed();
   	exchange = await Exchange.deployed();
   	await onchain_relayer.setToken(dummyToken.address);
   	await onchain_relayer.setWrappedEther(wrapped_ether.address);
   	await onchain_relayer.set0x_address(exchange.address);
+  	await onchain_relayer.setTTP_address(tokenTransferProxy.address);
   	await dummyToken.transfer(accounts[1],500000,{from:accounts[0]});
   	await dummyToken.transfer(accounts[2],500000,{from:accounts[0]});
   	assert.equal(await onchain_relayer.zeroX_address.call(),exchange.address,"0x contract must be successfully set");
@@ -54,7 +56,7 @@ contract('Contracts', function(accounts) {
       salt
     );
     await wrapped_ether.deposit({value:web3.toWei(1,'ether'),from:accounts[3]});
- 	await wrapped_ether.approve(ZRX_ADDRESS,web3.toWei(1,'ether'),{from:accounts[3]});
+ 	await wrapped_ether.approve(tokenTransferProxy.address,web3.toWei(1,'ether'),{from:accounts[3]});
  	var signature = await web3.eth.sign(accounts[0],orderHash);
  	signature = signature.slice(2,132);
  	console.log('signature',signature);
@@ -83,7 +85,7 @@ contract('Contracts', function(accounts) {
       web3.toBigNumber(eval(2**256 - 1)),
       salt
     );
- 	await dummyToken.approve(ZRX_ADDRESS,1000,{from:accounts[1]});
+ 	await dummyToken.approve(tokenTransferProxy.address,1000,{from:accounts[1]});
  	signature = await web3.eth.sign(accounts[0],orderHash);
  	signature = signature.slice(2,132);
  	var r = signature.slice(0, 64)
@@ -120,7 +122,7 @@ contract('Contracts', function(accounts) {
       salt
     );
     await wrapped_ether.deposit({value:web3.toWei(1,'ether'),from:accounts[3]});
- 	await wrapped_ether.approve(ZRX_ADDRESS,web3.toWei(1,'ether'),{from:accounts[3]});
+ 	await wrapped_ether.approve(tokenTransferProxy.address,web3.toWei(1,'ether'),{from:accounts[3]});
  	var signature = await web3.eth.sign(accounts[0],orderHash);
  	signature = signature.slice(2,132);
  	console.log('signature',signature);
@@ -134,9 +136,9 @@ contract('Contracts', function(accounts) {
  	console.log('Amount',info[0].toNumber());
  	assert.equal(info[0].toNumber(),1000,"The amount should be successfully set in the order");
  	console.log('Buy Order Succesfully Placed');
- 	await dummyToken.approve(ZRX_ADDRESS,1000,{from:accounts[1]});
+ 	await dummyToken.approve(tokenTransferProxy.address,1000,{from:accounts[1]});
  	await onchain_relayer.takeOrder(orderHash,1000,{from:accounts[1]})
-
+ 	assert.equal(1,0,'break');
  	 });
    /*it('Cancel Orders', async function () {
 

@@ -114,13 +114,13 @@ contract Exchange is SafeMath {
 
         require(order.taker == address(0) || order.taker == msg.sender);
         require(order.makerTokenAmount > 0 && order.takerTokenAmount > 0 && fillTakerTokenAmount > 0);
-        /*require(isValidSignature(
+        require(isValidSignature(
             order.maker,
             order.orderHash,
             v,
             r,
             s
-        ));*/
+        ));
 
         if (block.timestamp >= order.expirationTimestampInSec) {
             LogError(uint8(Errors.ORDER_EXPIRED), order.orderHash);
@@ -148,7 +148,7 @@ contract Exchange is SafeMath {
         uint paidMakerFee;
         uint paidTakerFee;
         filled[order.orderHash] = safeAdd(filled[order.orderHash], filledTakerTokenAmount);
-        /*require(transferViaTokenTransferProxy(
+        require(transferViaTokenTransferProxy(
             order.makerToken,
             order.maker,
             msg.sender,
@@ -159,7 +159,7 @@ contract Exchange is SafeMath {
             msg.sender,
             order.maker,
             filledTakerTokenAmount
-        ));*/
+        ));
         if (order.feeRecipient != address(0)) {
             if (order.makerFee > 0) {
                 paidMakerFee = getPartialAmount(filledTakerTokenAmount, order.takerTokenAmount, order.makerFee);
