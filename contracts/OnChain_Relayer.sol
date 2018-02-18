@@ -114,7 +114,10 @@ contract OnChain_Relayer is SafeMath{
         }
      uint _taken = zeroX.fillOrder(orderAddresses,orderValues,_TokenAmount,false,_v,sig[0],sig[1]);
      if(_amount > 0){
-
+        Wrapped_Ether.transfer(msg.sender,_taken);
+     }
+     else{
+        ERC20Token.transfer(msg.sender,_taken);
      }
 
      if(_taken > 0){
@@ -138,11 +141,11 @@ contract OnChain_Relayer is SafeMath{
     }
 
     function getHashfromIndex(uint _index)constant public returns(bytes32){
-        returns(orders[_index]);
+        return orders[_index];
     }
 
     function getOrderLength()constant public returns(uint _len){
-        returns orders.length;
+        return orders.length;
     }
 
     function getSignature(bytes32 _hash) constant internal returns(uint8 _v,bytes32 _r, bytes32 _s,uint salt){
