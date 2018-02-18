@@ -43,8 +43,6 @@ contract OnChain_Relayer is SafeMath{
 
     function placeLimit(int _amount, uint _price,bytes32 hash,uint _salt,uint8 _v,bytes32 _r,bytes32 _s) payable public returns(bytes32 _orderHash){
         require(_amount !=0);
-        bytes32 hash;
-
         if(_amount > 0){
             require(safeMul(abs(_amount),_price) == msg.value);
             Wrapped_Ether.delegatecall(bytes4(sha3("deposit(uint256)")), msg.value);
@@ -72,7 +70,7 @@ contract OnChain_Relayer is SafeMath{
         int _amount; uint _price; address _maker;
         (_amount,_price,_maker) = getInfo(_orderHash);
         require(msg.sender == _maker);
-        uint8 _v;bytes32[2] sig;uint salt;
+        uint8 _v;bytes32[2] memory sig;uint salt;
         (_v,sig[0],sig[1],salt) = getSignature(_orderHash);
         address[5] memory orderAddresses;
         uint[6] memory orderValues;
@@ -94,7 +92,7 @@ contract OnChain_Relayer is SafeMath{
         int _amount; uint _price; address _maker;
         (_amount,_price,_maker) = getInfo(_orderHash);
         require(abs(_amount) >= _TokenAmount);
-        uint8 _v;bytes32[2] sig;uint salt;
+        uint8 _v;bytes32[2] memory sig;uint salt;
         (_v,sig[0],sig[1],salt) = getSignature(_orderHash);
         address[5] memory orderAddresses;
         uint[6] memory orderValues;

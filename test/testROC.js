@@ -32,19 +32,47 @@ contract('Contracts', function(accounts) {
   	assert.equal(await dummyToken.balanceOf(accounts[1]),500000,"Account 2 should have 100,000 tokens");
   });
  it('Place Orders', async function () {
- 	signature = await web3.eth.sign(accounts[0],data_to_sign);
- 	r = signature[0:64]
-	s = signature[64:128]
-	v = signature[128:130]
- 	await onchain_relayer.placeLimit(1000,1,v,r,s{from:accounts{1}});
+
+ 	const ZRX_ADDRESS = await onchain_relayer.zeroX_address.call();
+    const WETH_ADDRESS = await onchain_relayer.wrapped_ether_address.call();
+    const TOKEN_ADDRESS = await onchain_relayer.token_address.call();
+    const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
+    const MAKER = accounts[3];
+    const TAKER = '0x0000000000000000000000000000000000000000';
+    const salt = web3.toBigNumber(Math.random() * 100000000000000000);
+
+ 	const orderHash = await web3.sha3(
+      ZRX_ADDRESS, 
+      MAKER,
+      TAKER,  
+      WETH_ADDRESS,
+      TOKEN_ADDRESS,
+      NULL_ADDRESS,
+      web3.toWei(1,'ether'),
+      1000,
+      0,
+      0,
+      web3.toBigNumber(2**256 - 1),
+      salt
+    );
+ 	console.log(orderHash);
+ 	signature = await web3.eth.sign(accounts[0],orderHash);
+ 	const r = signature.slice(0, 64)
+    const s = signature.slice(64, 128)
+    const v = signature.slice(128, 130) 
+ 	await onchain_relayer.placeLimit(1000,web3.toWei(1,'ether'),orderHash,salt,v,r,s,{value: web3.toWei(1,'ether'),from:accounts[3]});
 
  });
-  it('Fill Orders', async function () {
-
-
+ /* it('Fill Order', async function () {
+  	await onchain_relayer.placeLimit(1000,web3.toWei(1,'ether'),hash,salt,v,r,s{value: web3.toWei(1,'ether'),from:accounts{3}});
+  	await onchain_relayer.takeOrder(hash,amount,{from:accounts{1}});
+  	assert.equal(await dummyToken.balanceOf(accounts[3]),1000,"Account 4 should have 1000 tokens now");
  });
    it('Cancel Orders', async function () {
 
+  	await onchain_relayer.placeLimit(1000,web3.toWei(1,'ether'),hash,salt,v,r,s{value: web3.toWei(1,'ether'),from:accounts{3}});
+  	await onchain_relayer.cancelLimit(1000,web3.toWei(1,'ether'),hash,salt,v,r,s{value: web3.toWei(1,'ether'),from:accounts{3}});
+  	
 
  });
    it('Fill Partial', async function () {
@@ -56,6 +84,6 @@ contract('Contracts', function(accounts) {
 
 
  });
-
+*/
 
 });
