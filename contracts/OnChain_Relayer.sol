@@ -90,52 +90,53 @@ contract OnChain_Relayer is SafeMath{
 
     }
 
-    function takeOrder(bytes32 _orderHash, uint _TokenAmount,uint8 _v,bytes32[2] sig,uint salt) public returns(bool _success){
-        //must call allowance beforehand
+    function takeOrder(uint[2] _amountandsalt ,uint8 _v,bytes32[3] sig) public returns(bool _success){
+        //sig0 = r, sig1 = s, sig2 = orderHash
+        //must call allow beforehand
         int _amount; uint _price; address _maker;
-        (_amount,_price,_maker) = getInfo(_orderHash);
+        (_amount,_price,_maker) = getInfo(sig[2]);
         address[5] memory orderAddresses;
         uint[6] memory orderValues;
-        uint[3] bal;
+        uint[3] memory bal;
+        Print2('amount',_amount);
+        Print('price',_price);
         if(_amount > 0){
             bal[0] = uint(_amount);
-            assert(bal[0]  >= _TokenAmount);
+            assert(bal[0]  >= _amountandsalt[0]);
             orderAddresses = [_maker,msg.sender,wrapped_ether_address,token_address,address(0)];
-            orderValues = [safeMul(_TokenAmount,_price),_TokenAmount,0,0,2**256 - 1,salt];
-            assert(ERC20Token.allowance(msg.sender,tokentransferproxy_address) >= _TokenAmount);
-            assert(Wrapped_Ether.allowance(_maker,tokentransferproxy_address) >= _TokenAmount);
+            orderValues = [bal[0],_amountandsalt[0],0,0,2**256 - 1,_amountandsalt[1]];
+            assert(ERC20Token.allowance(msg.sender,tokentransferproxy_address) >= bal[0]);
+            assert(Wrapped_Ether.allowance(_maker,tokentransferproxy_address) >= _amountandsalt[0]);
             bal[1] = Wrapped_Ether.balanceOf(_maker);
         }
         else {
             bal[0]  = safeMul(uint(-_amount),_price);
-            assert(bal[0]  >= _TokenAmount);
-            assert(Wrapped_Ether.allowance(msg.sender,tokentransferproxy_address) >= _TokenAmount);
-             assert(ERC20Token.allowance(_maker,tokentransferproxy_address) >= _TokenAmount);
+            assert(bal[0]  >= _amountandsalt[0]);
+            assert(Wrapped_Ether.allowance(msg.sender,tokentransferproxy_address) >= bal[0]);
+            assert(ERC20Token.allowance(_maker,tokentransferproxy_address) >= _amountandsalt[0]);
             orderAddresses = [_maker,msg.sender,token_address,wrapped_ether_address,address(0)];
-            orderValues = [_TokenAmount,safeMul(_TokenAmount,_price),0,0,2**256 - 1,salt];
+            orderValues = [uint(-_amount),safeMul(_amountandsalt[0],_price),0,0,2**256 - 1,_amountandsalt[1]];
             bal[1] = ERC20Token.balanceOf(_maker);
         }
 
-     bool success = delegatecall(bytes4(sha3("fillOrder(address[5],uint[6],uint,bool,uint8,bytes32,bytes32")),orderAddresses,orderValues,_TokenAmount,false,_v,sig[0],sig[1]);
-     if(success){
-        if (_amount > 0){
-            bal[2] = Wrapped_Ether.balanceOf(_maker);
-         }
-         else{
-            bal[2] = ERC20Token.balanceOf(_maker);
-        }
-        if(bal[2] - bal[1] == bal[0]){
-            removeOrder(_orderHash);
-        }
-        else{
-            order_details[_orderHash].amount = order_details[_orderHash].amount - int(_TokenAmount);
-        }
-        FilledOrder(_orderHash,_TokenAmount,_price);
-        return true;
+    zeroX.delegatecall(bytes4(sha3("fillOrder(address[5],uint[6],uint,bool,uint8,bytes32,bytes32)")),orderAddresses,orderValues,_amountandsalt[0],false,_v,sig[0],sig[1]);
+    if (_amount > 0){
+        bal[2] = Wrapped_Ether.balanceOf(_maker);
      }
      else{
-        return false ;
-     }
+        bal[2] = ERC20Token.balanceOf(_maker);
+    }
+    if(bal[2] - bal[1] == bal[0]){
+        removeOrder(sig[2]);
+        FilledOrder(sig[2],_amountandsalt[0],_price);
+    }
+    else if (bal[2] == bal[1]){
+        return false;
+    }
+    else{
+        order_details[sig[2]].amount = order_details[sig[2]].amount - int(_amountandsalt[0]);
+    }
+    return true;
     }
 
     function getInfo(bytes32 _hash)constant public returns(int _amount, uint _price, address _maker){
