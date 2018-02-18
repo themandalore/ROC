@@ -56,7 +56,7 @@ contract('Contracts', function(accounts) {
       salt
     );
     await wrapped_ether.deposit({value:web3.toWei(1,'ether'),from:accounts[3]});
- 	await wrapped_ether.approve(onchain_relayer.address,web3.toWei(1,'ether'),{from:accounts[3]});
+ 	await wrapped_ether.approve(tokenTransferProxy.address,web3.toWei(1,'ether'),{from:accounts[3]});
  	var signature = await web3.eth.sign(accounts[0],orderHash);
  	signature = signature.slice(2,132);
  	console.log('signature',signature);
@@ -85,7 +85,7 @@ contract('Contracts', function(accounts) {
       web3.toBigNumber(eval(2**256 - 1)),
       salt
     );
- 	await dummyToken.approve(onchain_relayer.address,1000,{from:accounts[1]});
+ 	await dummyToken.approve(tokenTransferProxy.address,1000,{from:accounts[1]});
  	signature = await web3.eth.sign(accounts[0],orderHash);
  	signature = signature.slice(2,132);
  	var r = signature.slice(0, 64)
@@ -122,7 +122,7 @@ contract('Contracts', function(accounts) {
       salt
     );
     await wrapped_ether.deposit({value:web3.toWei(1,'ether'),from:accounts[3]});
- 	await wrapped_ether.approve(onchain_relayer.address,web3.toWei(1,'ether'),{from:accounts[3]});
+ 	await wrapped_ether.approve(tokenTransferProxy.address,web3.toWei(1,'ether'),{from:accounts[3]});
  	var signature = await web3.eth.sign(accounts[0],orderHash);
  	signature = signature.slice(2,132);
  	console.log('signature',signature);
