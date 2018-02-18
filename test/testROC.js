@@ -32,16 +32,14 @@ contract('Contracts', function(accounts) {
   	assert.equal(await dummyToken.balanceOf(accounts[1]),500000,"Account 2 should have 100,000 tokens");
   });
  it('Place Orders', async function () {
-
  	const ZRX_ADDRESS = await onchain_relayer.zeroX_address.call();
     const WETH_ADDRESS = await onchain_relayer.wrapped_ether_address.call();
     const TOKEN_ADDRESS = await onchain_relayer.token_address.call();
     const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
     const MAKER = accounts[3];
     const TAKER = '0x0000000000000000000000000000000000000000';
-    const salt = web3.toBigNumber(Math.random() * 100000000000000000);
-
- 	const orderHash = await web3.sha3(
+    var salt = web3.toBigNumber(Math.random() * 100000000000000000);
+ 	var orderHash = await web3.sha3(
       ZRX_ADDRESS, 
       MAKER,
       TAKER,  
@@ -55,19 +53,82 @@ contract('Contracts', function(accounts) {
       web3.toBigNumber(2**256 - 1),
       salt
     );
- 	console.log(orderHash);
+    await wrapped_ether.deposit({value:web3.toWei(1,'ether'),from:accounts[3]});
+ 	await wrapped_ether.approve(ZRX_ADDRESS,web3.toWei(1,'ether'),{from:accounts[3]});
  	signature = await web3.eth.sign(accounts[0],orderHash);
  	const r = signature.slice(0, 64)
     const s = signature.slice(64, 128)
     const v = signature.slice(128, 130) 
- 	await onchain_relayer.placeLimit(1000,web3.toWei(1,'ether'),orderHash,salt,v,r,s,{value: web3.toWei(1,'ether'),from:accounts[3]});
+    console.log('Input',1000,web3.toWei(1,'ether'),orderHash,salt,v,r,s)
+ 	await onchain_relayer.placeLimit(1000,web3.toWei(1,'ether'),orderHash,salt,v,r,s,{from:accounts[3]});
+ 	var amount, var price, var myadd;
+ 	amount,price,myadd = await onchain_relayer.getInfo(orderHash);
+ 	assert.equal(amount,1000,"The amount should be successfully set in the order");
+ 	console.log('Buy Order Succesfully Placed');
+ 	salt = web3.toBigNumber(Math.random() * 100000000000000000);
+ 	orderHash = await web3.sha3(
+      ZRX_ADDRESS, 
+      MAKER,
+      TAKER,  
+      WETH_ADDRESS,
+      TOKEN_ADDRESS,
+      NULL_ADDRESS,
+      web3.toWei(1,'ether'),
+      1000,
+      0,
+      0,
+      web3.toBigNumber(2**256 - 1),
+      salt
+    );
+ 	signature = await web3.eth.sign(accounts[0],orderHash);
+ 	await dummyToken.approve(ZRX_ADDRESS,1000,{from:accounts[1]});
+ 	const r = signature.slice(0, 64)
+    const s = signature.slice(64, 128)
+    const v = signature.slice(128, 130) 
+    console.log('Input',1000,web3.toWei(1,'ether'),orderHash,salt,v,r,s)
+ 	await onchain_relayer.placeLimit(-1000,web3.toWei(1.1,'ether'),orderHash,salt,v,r,s,{value:0,from:accounts[1]});
+ 	amount,price,myadd = await onchain_relayer.getInfo(orderHash);
+ 	assert.equal(amount,-1000,"The amount should be successfully set in the order");
+ 	console.log('Sell Order Succesfully Placed');
+ });
+ it('Fill Order', async function () {
 
- });
- /* it('Fill Order', async function () {
-  	await onchain_relayer.placeLimit(1000,web3.toWei(1,'ether'),hash,salt,v,r,s{value: web3.toWei(1,'ether'),from:accounts{3}});
-  	await onchain_relayer.takeOrder(hash,amount,{from:accounts{1}});
-  	assert.equal(await dummyToken.balanceOf(accounts[3]),1000,"Account 4 should have 1000 tokens now");
- });
+ 	const ZRX_ADDRESS = await onchain_relayer.zeroX_address.call();
+    const WETH_ADDRESS = await onchain_relayer.wrapped_ether_address.call();
+    const TOKEN_ADDRESS = await onchain_relayer.token_address.call();
+    const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
+    const MAKER = accounts[3];
+    const TAKER = '0x0000000000000000000000000000000000000000';
+    var salt = web3.toBigNumber(Math.random() * 100000000000000000);
+ 	var orderHash = await web3.sha3(
+      ZRX_ADDRESS, 
+      MAKER,
+      TAKER,  
+      WETH_ADDRESS,
+      TOKEN_ADDRESS,
+      NULL_ADDRESS,
+      web3.toWei(1,'ether'),
+      1000,
+      0,
+      0,
+      web3.toBigNumber(2**256 - 1),
+      salt
+    );
+ 	signature = await web3.eth.sign(accounts[0],orderHash);
+ 	const r = signature.slice(0, 64)
+    const s = signature.slice(64, 128)
+    const v = signature.slice(128, 130) 
+    console.log('Input',1000,web3.toWei(1,'ether'),orderHash,salt,v,r,s)
+ 	await onchain_relayer.placeLimit(1000,web3.toWei(1,'ether'),orderHash,salt,v,r,s,{value: web3.toWei(1,'ether'),from:accounts[3]});
+ 	console.log('Buy Order Succesfully Placed');
+ 	await onchain_relayer.
+
+ 	takeOrder(bytes32 _orderHash, uint _TokenAmount) payable
+
+
+
+
+ 	 });
    it('Cancel Orders', async function () {
 
   	await onchain_relayer.placeLimit(1000,web3.toWei(1,'ether'),hash,salt,v,r,s{value: web3.toWei(1,'ether'),from:accounts{3}});
