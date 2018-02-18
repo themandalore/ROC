@@ -15,6 +15,7 @@ contract OnChain_Relayer is SafeMath{
         uint8 v;
         bytes32 r;
         bytes32 s;
+        uint salt;
     }
 
     mapping(bytes32 => SpecificOrder) order_details;
@@ -40,28 +41,28 @@ contract OnChain_Relayer is SafeMath{
     }
 
 
-    function placeLimit(int _amount, uint _price,uint8 _v,bytes32 _r,bytes32 _s) payable public returns(bytes32 _orderHash){
+    function placeLimit(int _amount, uint _price,bytes32 hash,uint _salt,uint8 _v,bytes32 _r,bytes32 _s) payable public returns(bytes32 _orderHash){
         require(_amount !=0);
+        bytes32 hash;
 
         if(_amount > 0){
             require(safeMul(abs(_amount),_price) == msg.value);
             Wrapped_Ether.delegatecall(bytes4(sha3("deposit(uint256)")), msg.value);
             Wrapped_Ether.delegatecall(bytes4(sha3("approve(address,uint256)")),zeroX_address, msg.value);
-            require(Wrapped_Ether.allowance(msg.sender,zeroX_address) == msg.value);
+            assert(Wrapped_Ether.allowance(msg.sender,zeroX_address) == msg.value);
         }
         else{
             require(msg.value == 0);
             ERC20Token.delegatecall(bytes4(sha3("approve(address,uint256)")),zeroX_address,msg.value);
-            require(ERC20Token.allowance(msg.sender,zeroX_address) == msg.value);
+            assert(ERC20Token.allowance(msg.sender,zeroX_address) == msg.value);
         }
-        uint nonce = safeMul(_v,block.timestamp) % now;
-        bytes32 hash = keccak256(msg.sender,_amount,_price,now,nonce);
         order_details[hash].amount = _amount;
         order_details[hash].price = _price;
         order_details[hash].maker= msg.sender;
         order_details[hash].v= _v;
         order_details[hash].r= _r;
         order_details[hash].s= _s;
+        order_details[hash].salt = _salt;
         orders.push(hash);
         NewOrder(hash,_amount,_price);
     }
@@ -71,11 +72,10 @@ contract OnChain_Relayer is SafeMath{
         int _amount; uint _price; address _maker;
         (_amount,_price,_maker) = getInfo(_orderHash);
         require(msg.sender == _maker);
-        uint8 _v;bytes32 _r; bytes32 _s;
-        (_v,_r,_s) = getSignature(_orderHash);
+        uint8 _v;bytes32[2] sig;uint salt;
+        (_v,sig[0],sig[1],salt) = getSignature(_orderHash);
         address[5] memory orderAddresses;
         uint[6] memory orderValues;
-        uint salt = safeMul(safeMul(now,block.timestamp),safeMul(abs(_amount),_price)) % _v;
         if(_amount > 0){
             orderAddresses = [_maker,msg.sender,wrapped_ether_address,token_address,owner];
             orderValues = [safeMul(abs(_amount),_price),abs(_amount),0,0,2**256 - 1,salt];
@@ -94,28 +94,25 @@ contract OnChain_Relayer is SafeMath{
         int _amount; uint _price; address _maker;
         (_amount,_price,_maker) = getInfo(_orderHash);
         require(abs(_amount) >= _TokenAmount);
-        uint8 _v;bytes32[] sig;
-        (_v,sig[0],sig[1]) = getSignature(_orderHash);
+        uint8 _v;bytes32[2] sig;uint salt;
+        (_v,sig[0],sig[1],salt) = getSignature(_orderHash);
         address[5] memory orderAddresses;
         uint[6] memory orderValues;
-        uint salt = safeMul(safeMul(now,block.timestamp),safeMul(abs(_amount),_price)) % _v;
         if(_amount > 0){
             require(msg.value == 0);
             orderAddresses = [_maker,msg.sender,wrapped_ether_address,token_address,owner];
             orderValues = [safeMul(_TokenAmount,_price),_TokenAmount,0,0,2**256 - 1,salt];
             ERC20Token.delegatecall(bytes4(sha3("approve(address,uint256)")),zeroX_address,msg.value);
-            require(ERC20Token.allowance(msg.sender,zeroX_address) == msg.value);
+            assert(ERC20Token.allowance(msg.sender,zeroX_address) == msg.value);
         }
         else {
             require(safeMul(_TokenAmount,_price) == msg.value);
             Wrapped_Ether.delegatecall(bytes4(sha3("deposit(uint256)")), msg.value);
             Wrapped_Ether.delegatecall(bytes4(sha3("approve(address,uint256)")),zeroX_address, msg.value);
-            require(Wrapped_Ether.allowance(msg.sender,zeroX_address) == msg.value);
+            assert(Wrapped_Ether.allowance(msg.sender,zeroX_address) == msg.value);
             orderAddresses = [_maker,msg.sender,token_address,wrapped_ether_address,owner];
             orderValues = [_TokenAmount,safeMul(_TokenAmount,_price),0,0,2**256 - 1,salt];
         }
-
-        //zeroX.fillOrder(orderAddresses,orderValues,uint fillTakerTokenAmount,bool shouldThrowOnInsufficientBalanceOrAllowance, uint8 v,bytes32 r, bytes32 s);
         uint _taken = zeroX.fillOrder(orderAddresses,orderValues,_TokenAmount,false,_v,sig[0],sig[1]);
      if(_taken > 0){
         if(_taken == abs(_amount)){
@@ -137,8 +134,8 @@ contract OnChain_Relayer is SafeMath{
         return(order_details[_hash].amount,order_details[_hash].price,order_details[_hash].maker);
     }
 
-    function getSignature(bytes32 _hash) constant internal returns(uint8 _v,bytes32 _r, bytes32 _s){
-        return(order_details[_hash].v,order_details[_hash].r,order_details[_hash].s);
+    function getSignature(bytes32 _hash) constant internal returns(uint8 _v,bytes32 _r, bytes32 _s,uint salt){
+        return(order_details[_hash].v,order_details[_hash].r,order_details[_hash].s,order_details[_hash].salt);
     }
 
     function setToken(address _tokenAddress) public onlyOwner() {
